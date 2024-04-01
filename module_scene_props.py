@@ -4022,5 +4022,22 @@ scene_props = [
       (particle_system_add_new, "psys_candle_light"),
     ]),
   ]),
+#COOP BEGIN############################################################################
+  ("coop_inventory",spr_use_time(2),"package","bobaggage", [
+   (ti_on_scene_prop_use,
+    [
+      (store_trigger_param_1, ":player_agent"),
+      (store_trigger_param_2, ":instance_id"),
+      (try_begin),
+        (eq, "$coop_reduce_damage", 1),
+        (agent_refill_ammo, ":player_agent"),
+      (try_end),
+      (try_begin),
+        (eq, "$coop_inventory_box", ":instance_id"), #only call this for player team box
+        (call_script, "script_coop_player_access_inventory",":player_agent"),
+      (try_end),
+    ]),
+  ]),
+#COOP END#########################################################################################  
 
 ]

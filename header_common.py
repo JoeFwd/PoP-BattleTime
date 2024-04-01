@@ -159,6 +159,12 @@ multiplayer_event_return_ccoop_difficulty                     = 122
 multiplayer_event_ccoop_victory_message                       = 123
 multiplayer_event_ccoop_return_of_the_king                    = 124
 #INVASION MODE END
+#COOP BEGIN###################################################################################
+multiplayer_event_coop_send_to_server                         = 125
+multiplayer_event_coop_send_to_player                         = 126
+multiplayer_event_coop_send_to_player_string                  = 127
+# clients can only recieve up to multiplayer_event = 127
+#COOP END#########################################################################################
 
 #multiplayer message types
 multiplayer_message_type_auto_team_balance_done      = 2
@@ -190,8 +196,12 @@ multiplayer_game_type_siege                  = 6
 multiplayer_game_type_duel                   = 7
 #INVASION MODE START
 multiplayer_game_type_captain_coop           = 8
-multiplayer_num_game_types                   = 9
 #INVASION MODE END
+#COOP BEGIN################################################################
+multiplayer_game_type_coop_battle            = 9
+multiplayer_game_type_coop_siege             = 10
+multiplayer_num_game_types                   = 11
+#COOP END#####################################################################
 
 #admin panel value ranges
 multiplayer_round_max_seconds_min            = 60

@@ -12,6 +12,9 @@ from header_sounds import *
 from header_music import *
 from header_items import *
 from module_constants import *
+#COOP BEGIN#####################################
+from module_coop_mission_templates import *
+#COOP END#############################################
 
 ####################################################################################################################
 #   Each mission-template is a tuple that contains the following fields:
@@ -30025,4 +30028,7 @@ mission_templates = [
 
   ]),
 
-]
+
+#COOP BEGIN ##########################
+] + coop_mission_templates 
+#COOP END############################

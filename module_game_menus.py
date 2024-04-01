@@ -8197,6 +8197,66 @@ game_menus = [
       ]
       ),
 
+#COOP BEGIN Battle#############################		  
+      ("coop_setup",[
+        (call_script, "script_coop_get_battle_state", 1), #sets coop_battle_state
+        (this_or_next|ge, "$cheat_mode", 1),
+        (eq, "$coop_battle_state", coop_battle_state_none),
+      ],"Setup multiplayer battle.", 
+      [   
+        #need to attach villagers to battle
+        (try_begin),
+          (eq, "$g_encounter_type", enctype_catched_during_village_raid), #if player is raiding
+          (gt, "$g_player_raiding_village", 0),
+          (party_attach_to_party, "$g_encounter_is_in_village", "$g_enemy_party"),
+          (assign, "$coop_encountered_party", "$g_enemy_party"),
+          (assign, "$coop_battle_type", coop_battle_type_village_player_attack),
+        (else_try),
+          (eq, "$g_encounter_type", enctype_fighting_against_village_raid),#if enemy lord is raiding
+          (assign, "$g_ally_party", "$g_encounter_is_in_village"),
+          (assign, "$coop_encountered_party", "$g_enemy_party"),
+          (assign, "$coop_battle_type", coop_battle_type_village_player_defend),
+        (else_try),
+          (assign, "$coop_battle_type", coop_battle_type_field_battle), #normal field battle
+          (assign, "$coop_encountered_party", "$g_enemy_party"),
+        (try_end),
+
+        (call_script, "script_coop_copy_parties_to_file_sp"), # set coop_battle_state to 1
+        (try_begin),
+          (eq, "$coop_skip_menu", 1),
+          (change_screen_quit), 
+        (try_end),
+      ]),	
+
+      ("quit",[
+        (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+        (eq, "$coop_battle_state", coop_battle_state_setup_sp),
+      ],"Quit game (will not save).", 
+      [
+        (change_screen_quit), 
+      ]),		
+
+      ("coop_use_result",[
+         (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+         (eq, "$coop_battle_state", coop_battle_state_end_mp),
+      ],"Use multiplayer battle results.", 
+      [
+        (call_script, "script_calculate_renown_value"),
+        (call_script, "script_coop_copy_file_to_parties_sp"),	   # set coop_battle_state to 0
+        (assign, "$g_engaged_enemy", 1),
+        (assign, "$g_next_menu", "mnu_simple_encounter"),
+        (jump_to_menu, "mnu_battle_debrief"),
+      ]),		 
+ 
+      ("encounter_save",[],"Give me time to save.",
+      [
+        (call_script, "script_coop_get_battle_state", 2),
+        (leave_encounter),
+        (change_screen_return),
+       # (rest_for_hours, 1, 1, 0),#rest while not attackable
+      ]),		  
+#COOP END##########################################
+
       ("encounter_leave",
       [
         (eq, "$cant_leave_encounter", 0),
@@ -9222,6 +9282,13 @@ game_menus = [
       (call_script, "script_party_prisoners_add_party_companions", "p_temp_party", "p_main_party"),
       (distribute_party_among_party_group, "p_temp_party", "$g_enemy_party"),
       (assign, "$g_prison_heroes", 1),
+#COOP BEGIN ###############################################################################
+      (try_begin),
+        (eq, "$coop_no_capture_heroes", 1),
+        (assign, "$g_prison_heroes", 0),
+        (assign, "$g_move_heroes", 0),
+      (try_end),
+#COOP END ##########################################################################################      
       (call_script, "script_party_remove_all_companions", "p_main_party"),
       (assign, "$g_prison_heroes", 0),
       (assign, "$g_move_heroes", 1),
@@ -9508,7 +9575,53 @@ game_menus = [
         (jump_to_menu, "mnu_join_order_attack"),
       ]
       ),
+#COOP BEGIN Join battle#############################		  
+      ("coop_setup",[
+        (call_script, "script_coop_get_battle_state", 1), #sets coop_battle_state
+        (this_or_next|ge, "$cheat_mode", 1),
+        (eq, "$coop_battle_state", coop_battle_state_none),
+      ],"Setup multiplayer battle.", 
+      [
+        (assign, "$coop_battle_type", coop_battle_type_field_battle),
+        (assign, "$coop_encountered_party", "$g_enemy_party"),
+        (call_script, "script_coop_copy_parties_to_file_sp"),
+        (try_begin),
+          (eq, "$coop_skip_menu", 1),
+          (change_screen_quit), 
+        (try_end),
+      ]),	
+	  
+      ("quit",[
+        (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+        (eq, "$coop_battle_state", coop_battle_state_setup_sp),
+      ],"Quit game (will not save).", 
+      [
+        (change_screen_quit), 
+      ]),		
 
+      ("coop_use_result",[
+        (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+         (eq, "$coop_battle_state", coop_battle_state_end_mp),
+      ],"Use multiplayer battle results.", 
+      [
+
+        (call_script, "script_calculate_renown_value"),
+        (call_script, "script_coop_copy_file_to_parties_sp"),	     #remove troops from parties
+        (jump_to_menu, "mnu_battle_debrief"),
+      #change these for menu
+        (assign, "$g_next_menu", "mnu_join_battle"),
+        (assign, "$g_joined_battle_to_help", 1),
+      ]),		 
+      ("encounter_save",[],"Give me time to save.",
+      [
+        (call_script, "script_coop_get_battle_state", 2),
+        (leave_encounter),
+        (change_screen_return),
+        # (rest_for_hours, 1, 1, 0),#rest while not attackable
+
+      ]),		  
+          
+#COOP END##########################################
       ("join_leave",
       [],
       "Leave.",
@@ -9968,7 +10081,10 @@ game_menus = [
           (eq, "$g_battle_result", 1),
           (assign, ":var0", 1),
         (else_try),
-          (le, "$g_enemy_fit_for_battle", 0),
+#COOP BEGIN bugfix ##############
+#              (le, "$g_enemy_fit_for_battle",0),
+          (le, "$g_enemy_fit_for_battle", "$num_routed_enemies"),  #replaced for above line because we do not want routed agents to spawn again in next turn of battle.
+#COOP END######################### 
           (ge, "$g_friend_fit_for_battle", 1),
           (assign, ":var0", 1),
         (end_try),
@@ -9981,7 +10097,11 @@ game_menus = [
         (call_script, "script_party_count_members_with_full_health", "p_collective_friends"),
         (assign, ":var1", reg0),
         (eq, "$g_battle_result", -1),
-        (eq, ":var1", 0),
+#COOP BEGIN bugfix ##############
+#          (eq, ":ally_num_soldiers", 0), #battle lost (sdsd = TODO : also compare this with routed allies too like in other parts)
+#          (eq, ":var1", 0), # decompiled version -> var1 is ally_num_soldiers
+         (le, ":var1",  "$num_routed_allies"), #replaced for above line because we do not want routed agents to spawn again in next turn of battle.
+#COOP END##########################        
         (leave_encounter),
         (change_screen_return),
       (end_try),
@@ -10081,7 +10201,70 @@ game_menus = [
         (jump_to_menu, "mnu_castle_attack_walls_with_allies_simulate"),
       ]
       ),
+#COOP BEGIN Join siege#############################		  
+      ("coop_setup",
+       [
+        (call_script, "script_coop_get_battle_state", 1), #sets coop_battle_state
+        (this_or_next|ge, "$cheat_mode", 1),
+        (eq, "$coop_battle_state", coop_battle_state_none),
+       ],
+       "Setup multiplayer battle.", 
+       [
+        (assign, "$coop_battle_type", coop_battle_type_siege_player_attack),
+        (assign, "$coop_encountered_party", "$g_enemy_party"),
+        (call_script, "script_coop_copy_parties_to_file_sp"),#clears registers
+        (try_begin),
+          (eq, "$coop_skip_menu", 1),
+          (change_screen_quit), 
+        (try_end),
 
+       ]),	
+	  
+      ("quit",[
+        (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+        (eq, "$coop_battle_state", coop_battle_state_setup_sp),
+      ],"Quit game (will not save).", 
+      [
+        (change_screen_quit), 
+      ]),		
+
+      ("coop_use_result",[
+        (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+         (eq, "$coop_battle_state", coop_battle_state_end_mp),
+      ],"Use multiplayer battle results.", 
+      [
+        (call_script, "script_calculate_renown_value"),
+        (assign, "$g_siege_final_menu", "mnu_besiegers_camp_with_allies"),
+        (assign, "$g_siege_battle_state", 1),
+        (assign, "$g_next_menu", "mnu_besiegers_camp_with_allies"),
+        (assign, "$g_joined_battle_to_help", 1),
+        (party_set_next_battle_simulation_time, "$g_encountered_party", -1),
+        (try_begin),
+          (check_quest_active, "qst_join_siege_with_army"),
+          (quest_slot_eq, "qst_join_siege_with_army", slot_quest_target_center, "$g_encountered_party"),
+          (add_xp_as_reward, 250),
+          (call_script, "script_end_quest", "qst_join_siege_with_army"),
+          #Reactivating follow army quest
+          (faction_get_slot, ":faction_marshall", "$players_kingdom", slot_faction_marshall),
+          (str_store_troop_name_link, s9, ":faction_marshall"),
+          (setup_quest_text, "qst_follow_army"),
+          (str_store_string, s2, "@{s9} wants you to follow his army until further notice."),
+          (call_script, "script_start_quest", "qst_follow_army", ":faction_marshall"),
+          (assign, "$g_player_follow_army_warnings", 0),
+        (try_end),
+
+        (call_script, "script_coop_copy_file_to_parties_sp"),	     #remove troops from parties
+        (jump_to_menu, "mnu_battle_debrief"),
+      ]),		  
+
+      ("encounter_save",[],"Give me time to save.",
+      [
+        (call_script, "script_coop_get_battle_state", 2),
+        (leave_encounter),
+        (change_screen_return),
+       # (rest_for_hours, 1, 1, 0),#rest while not attackable
+      ]),		  
+#COOP END#################################################
       ("leave",
       [],
       "Leave.",
@@ -10782,7 +10965,10 @@ game_menus = [
           (eq, "$g_battle_result", 1),
           (assign, ":var10", 1),
         (else_try),
-          (le, "$g_enemy_fit_for_battle", 0),
+#COOP BEGIN bugfix ##############
+#         (le, "$g_enemy_fit_for_battle",0),
+          (le, "$g_enemy_fit_for_battle", "$num_routed_enemies"),  #replaced for above line because we do not want routed agents to spawn again in next turn of battle.
+#COOP END##########################            
           (ge, "$g_friend_fit_for_battle", 1),
           (assign, ":var10", 1),
         (end_try),
@@ -10794,7 +10980,11 @@ game_menus = [
         (call_script, "script_party_count_members_with_full_health", "p_main_party"),
         (assign, ":var11", reg0),
         (eq, "$g_battle_result", -1),
-        (eq, ":var11", 0),
+#COOP BEGIN bugfix ##############
+#          (eq, ":main_party_fit_regulars", 0), #all lost (sdsd = TODO : )     
+#       (eq, ":var11", 0),  # decompiled code -> var11 is main_party_fit_regulars
+        (le, ":var11",  "$num_routed_allies"), #replaced for above line because we do not want routed agents to spawn again in next turn of battle.
+#COOP END##########################        
         (assign, "$g_next_menu", "mnu_captivity_start_castle_defeat"),
         (jump_to_menu, "mnu_total_defeat"),
       (end_try),
@@ -10938,7 +11128,82 @@ game_menus = [
         (jump_to_menu, "mnu_castle_attack_walls_simulate"),
       ]
       ),
+#COOP BEGIN Siege attack#############################		  
+      ("coop_setup",
+       [
+        (call_script, "script_coop_get_battle_state", 1), #sets coop_battle_state
+        (this_or_next|ge, "$cheat_mode", 1),
+        (eq, "$coop_battle_state", coop_battle_state_none),
+         (ge, "$g_siege_method", 1),
+         (gt, "$g_friend_fit_for_battle", 3),
+         (store_current_hours, ":cur_hours"),
+         (ge, ":cur_hours", "$g_siege_method_finish_hours"),
+       ],
+       "Setup multiplayer battle.", 
+       [
+        (assign, "$coop_battle_type", coop_battle_type_siege_player_attack),
+        (assign, "$coop_encountered_party", "$g_enemy_party"),
+        (call_script, "script_coop_copy_parties_to_file_sp"),#clears registers
+        (try_begin),
+          (eq, "$coop_skip_menu", 1),
+          (change_screen_quit), 
+        (try_end),
 
+#TODO siege sally
+#           (assign, "$g_siege_battle_state", 1),
+#           (assign, ":siege_sally", 0),
+#           (try_begin),
+#             (le, ":battle_advantage", -4), #we are outnumbered, defenders sally out
+#             (eq, "$g_siege_sallied_out_once", 0),
+#             (set_jump_mission,"mt_castle_attack_walls_defenders_sally"),
+#             (assign, "$g_siege_battle_state", 0),
+#             (assign, ":siege_sally", 1),
+#           (else_try),
+#             (party_slot_eq, "$current_town", slot_center_siege_with_belfry, 1),
+#             (set_jump_mission,"mt_castle_attack_walls_belfry"),
+#           (else_try),
+#             (set_jump_mission,"mt_castle_attack_walls_ladder"),
+#           (try_end),
+
+       ]),	
+	  
+
+      ("quit",[
+        (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+        (eq, "$coop_battle_state", coop_battle_state_setup_sp),
+        (ge, "$g_siege_method", 1),
+      ],"Quit game (will not save).", 
+      [
+        (change_screen_quit), 
+      ]),		
+
+      ("coop_use_result",[
+         (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+         (eq, "$coop_battle_state", coop_battle_state_end_mp),
+         (ge, "$g_siege_method", 1),
+         (store_current_hours, ":cur_hours"),
+         (ge, ":cur_hours", "$g_siege_method_finish_hours"),
+      ],"Use multiplayer battle results.", 
+      [
+
+        (call_script, "script_calculate_renown_value"),
+        (assign, "$cant_talk_to_enemy", 0),           
+        (assign, "$g_siege_final_menu", "mnu_castle_besiege"),
+        (assign, "$g_next_menu", "mnu_castle_besiege"),
+        (assign, "$g_siege_method", 0), #reset siege timer
+
+        (call_script, "script_coop_copy_file_to_parties_sp"),	     #remove troops from parties
+        (jump_to_menu, "mnu_battle_debrief"),
+      ]),		  
+
+      ("encounter_save",[(ge, "$g_siege_method", 1)],"Give me time to save.",
+      [
+        (call_script, "script_coop_get_battle_state", 2),
+        (leave_encounter),
+        (change_screen_return),
+       # (rest_for_hours, 1, 1, 0),#rest while not attackable
+      ]),	
+#COOP END#################################################
       ("build_ladders",
       [
         (party_slot_eq, "$current_town", 27, 0),
@@ -11763,11 +12028,20 @@ game_menus = [
           (assign, ":var2", 0),
           (try_begin),
             (eq, "$g_battle_result", 1),
-            (eq, ":var0", 0),
+#COOP BEGIN bugfix ##############
+#              (eq, ":var0", 0), decompiled code -> var0 is num_enemy_regulars_remaining
+#              (eq, ":num_enemy_regulars_remaining", 0), #battle won (sdsd = TODO : compare with num_routed_us)
+            (this_or_next|le, ":var0", 0), #battle won
+            (le, ":var0",  "$num_routed_enemies"), #replaced for above line because we do not want routed agents to spawn again in next turn of battle.
+#COOP END##########################            
             (assign, ":var2", 1),
           (else_try),
             (eq, "$g_engaged_enemy", 1),
-            (le, "$g_enemy_fit_for_battle", 0),
+#COOP BEGIN bugfix ##############
+#              (le, "$g_enemy_fit_for_battle",0),
+            (this_or_next|le, ":var0", 0), 
+            (le, "$g_enemy_fit_for_battle", "$num_routed_enemies"),  #replaced for above line because we do not want routed agents to spawn again in next turn of battle.
+#COOP END##########################
             (ge, "$g_friend_fit_for_battle", 1),
             (assign, ":var2", 1),
           (end_try),
@@ -11780,7 +12054,11 @@ game_menus = [
           (try_begin),
             (this_or_next|eq, "$g_battle_result", -1),
             (troop_is_wounded, "trp_player"),
-            (eq, ":var1", 0),
+#COOP BEGIN bugfix ##############
+#              (eq, ":var1", 0), # decompiled code -> var1 is num_ally_regulars_remaining
+#              (eq, ":num_ally_regulars_remaining", 0), #(sdsd = TODO : compare with num_routed_allies)
+            (le, ":var1",  "$num_routed_allies"), #replaced for above line because we do not want routed agents to spawn again in next turn of battle.
+#COOP END##########################            
             (assign, ":var3", 1),
           (end_try),
           (this_or_next|eq, ":var3", 1),
@@ -11892,8 +12170,58 @@ game_menus = [
         (jump_to_menu, "mnu_siege_join_defense"),
       ]
       ),
+#COOP BEGIN Siege defend#############################		  
+      ("coop_setup",
+       [
+        (call_script, "script_coop_get_battle_state", 1), #sets coop_battle_state
+        (this_or_next|ge, "$cheat_mode", 1),
+        (eq, "$coop_battle_state", coop_battle_state_none),
+       ],
+       "Setup multiplayer battle.", 
+       [
+        (assign, "$coop_battle_type", coop_battle_type_siege_player_defend),
+        (assign, "$g_siege_first_encounter", 1),#we are not finished in this menu yet
+        (assign, "$coop_encountered_party", "$g_enemy_party"),
+        (call_script, "script_coop_copy_parties_to_file_sp"),#clears registers
+        (try_begin),
+          (eq, "$coop_skip_menu", 1),
+          (change_screen_quit), 
+        (try_end),
+       ]),	
+	  
+
+      ("quit",[
+        (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+        (eq, "$coop_battle_state", coop_battle_state_setup_sp),
+      ],"Quit game (will not save).", 
+      [
+        (change_screen_quit), 
+      ]),		
+
+      ("coop_use_result",[
+         (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+         (eq, "$coop_battle_state", coop_battle_state_end_mp),
+      ],"Use multiplayer battle results.", 
+      [
+        (call_script, "script_calculate_renown_value"),
+        (assign, "$g_siege_first_encounter", 0),
+        (assign, "$new_encounter", 0),
+        (call_script, "script_coop_copy_file_to_parties_sp"),	     #remove troops from parties
+        (assign, "$g_next_menu", "mnu_siege_started_defender"),
+        (jump_to_menu, "mnu_battle_debrief"),
+
+      ]),		  
+
+	  ("encounter_save",[],"Give me time to save.",
+	  [
+        (call_script, "script_coop_get_battle_state", 2),
+        (leave_encounter),
+        (change_screen_return),
+       # (rest_for_hours, 1, 1, 0),#rest while not attackable
+      ]),		  
+#COOP END#################################################      
     ],
-  ),
+  ), 
 
   ("siege_join_defense", mnf_disable_all_keys|mnf_scale_picture,
     "{s4}^^Your casualties: {s8}^^Allies' casualties: {s9}^^Enemy casualties: {s10}^^Allies remaining: {reg10}^Enemies remaining: {reg11}",
@@ -12351,7 +12679,63 @@ game_menus = [
         (change_screen_mission),
       ]
       ),
+#COOP BEGIN Village bandits#############################		  
+      ("coop_setup",
+       [
+        (call_script, "script_coop_get_battle_state", 1), #sets coop_battle_state
+        (this_or_next|ge, "$cheat_mode", 1),
+        (eq, "$coop_battle_state", coop_battle_state_none),
+        (party_slot_ge, "$current_town", slot_village_infested_by_bandits, 1),
+       ],
+       "Setup multiplayer battle.", 
+       [
+        (assign, "$coop_battle_type", coop_battle_type_village_player_defend),
 
+        # (set_visitors, 0, ":bandit_troop", "$qst_eliminate_bandits_infesting_village_num_bandits"),
+        # (set_visitors, 2, "trp_farmer", "$qst_eliminate_bandits_infesting_village_num_villagers"),
+        (party_get_slot, ":bandit_troop", "$current_town", slot_village_infested_by_bandits),
+
+        (party_clear, "p_temp_wounded"), #use this party to temp make bandits
+        (party_add_members, "p_temp_wounded", ":bandit_troop", "$qst_eliminate_bandits_infesting_village_num_bandits"),
+        (assign, "$coop_encountered_party", "p_temp_wounded"),
+        (assign, "$g_ally_party", "$current_town"),
+
+        (call_script, "script_coop_copy_parties_to_file_sp"),#clears registers
+        (try_begin),
+          (eq, "$coop_skip_menu", 1),
+          (change_screen_quit), 
+        (try_end),
+       ]),	
+	  
+      ("quit",[
+        (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+        (eq, "$coop_battle_state", coop_battle_state_setup_sp),
+        (party_slot_ge, "$current_town", slot_village_infested_by_bandits, 1),
+      ],"Quit game (will not save).", 
+      [
+        (change_screen_quit), 
+      ]),		
+
+      ("coop_use_result",[
+         (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+         (eq, "$coop_battle_state", coop_battle_state_end_mp),
+        (party_slot_ge, "$current_town", slot_village_infested_by_bandits, 1),
+      ],"Use multiplayer battle results.", 
+      [
+
+        (assign, "$g_next_menu", "mnu_village_infest_bandits_result"),
+        (call_script, "script_coop_copy_file_to_parties_sp"),	     #remove troops from parties
+        (jump_to_menu, "mnu_battle_debrief"),
+      ]),		  
+ 
+      ("encounter_save",[(party_slot_ge, "$current_town", slot_village_infested_by_bandits, 1)],"Give me time to save.",
+      [
+        (call_script, "script_coop_get_battle_state", 2),
+        (change_screen_return),
+       # (rest_for_hours, 1, 1, 0),#rest while not attackable
+      ]),  
+          
+#COOP END#################################################
       ("village_wait",
       [
         (party_slot_eq, "$current_town", 251, 1),
@@ -13999,7 +14383,67 @@ game_menus = [
         (change_screen_mission),
       ]
       ),
+#COOP BEGIN Village attack#############################		  
+      ("coop_setup",
+       [
+        (call_script, "script_coop_get_battle_state", 1), #sets coop_battle_state
+        (this_or_next|ge, "$cheat_mode", 1),
+        (eq, "$coop_battle_state", coop_battle_state_none),
+       ],
+       "Setup multiplayer battle.", 
+       [
+        (assign, "$coop_battle_type", coop_battle_type_village_player_attack),
+        (assign, "$coop_encountered_party", "$current_town"),
 
+        (call_script, "script_coop_copy_parties_to_file_sp"),#clears registers
+        (try_begin),
+          (eq, "$coop_skip_menu", 1),
+          (change_screen_quit), 
+        (try_end),
+       ]),	
+	  
+
+       ("quit",[
+        (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+        (eq, "$coop_battle_state", coop_battle_state_setup_sp),
+      ],"Quit game (will not save).", 
+      [
+        (change_screen_quit), 
+      ]),		
+
+      ("coop_use_result",[
+         (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+         (eq, "$coop_battle_state", coop_battle_state_end_mp),
+      ],"Use multiplayer battle results.", 
+      [
+
+          (store_random_in_range, ":enmity", -10, -5),
+          (call_script, "script_change_player_relation_with_center", "$current_town", ":enmity"),
+          (try_begin),
+            (party_get_slot, ":town_lord", "$current_town", slot_town_lord),
+            (gt, ":town_lord", 0),
+            (call_script, "script_change_player_relation_with_troop", ":town_lord", -3),
+          (try_end),
+
+         # (assign, "$g_village_raid_evil", 1), #not needed
+          (assign, "$g_next_menu", "mnu_village_start_attack"),
+
+          (call_script, "script_diplomacy_party_attacks_neutral", "p_main_party", "$g_encountered_party"),
+          (call_script, "script_objectionable_action", tmt_humanitarian, "str_loot_village"),
+
+        (call_script, "script_coop_copy_file_to_parties_sp"),	     #remove troops from parties
+        (jump_to_menu, "mnu_battle_debrief"),
+
+      ]),		  
+
+      ("encounter_save",[],"Give me time to save.",
+      [
+        (call_script, "script_coop_get_battle_state", 2),
+        (change_screen_return),
+       # (rest_for_hours, 1, 1, 0),#rest while not attackable
+      ]),		
+          
+#COOP END#################################################
       ("village_raid_leave",
       [],
       "Leave_this_village_alone.",
@@ -18177,6 +18621,66 @@ game_menus = [
         (change_screen_mission),
       ]
       ),
+#COOP BEGIN Village train peasants against bandits#############################		  
+      ("coop_setup",
+       [
+        (call_script, "script_coop_get_battle_state", 1), #sets coop_battle_state
+        (this_or_next|ge, "$cheat_mode", 1),
+        (eq, "$coop_battle_state", coop_battle_state_none),
+       ],
+       "Setup multiplayer battle.", 
+       [
+        (assign, "$coop_battle_type", coop_battle_type_village_player_defend),
+
+        (store_random_in_range, ":random_no", 0, 3),
+        (try_begin),
+          (eq, ":random_no", 0),
+          (assign, ":bandit_troop", "trp_bandit"),
+        (else_try),
+          (eq, ":random_no", 1),
+          (assign, ":bandit_troop", "trp_mountain_bandit"),
+        (else_try),
+          (assign, ":bandit_troop", "trp_forest_bandit"),
+        (try_end),
+
+        (store_character_level, ":level", "trp_player"),
+        (val_div, ":level", 2),
+        (store_add, ":min_bandits", ":level", 16),
+        (store_add, ":max_bandits", ":min_bandits", 6),
+        (store_random_in_range, ":random_no", ":min_bandits", ":max_bandits"),
+        (party_clear, "p_temp_wounded"), #use this party to temp make bandits
+        (party_add_members, "p_temp_wounded", ":bandit_troop", ":random_no"),
+
+        (assign, "$coop_encountered_party", "p_temp_wounded"),
+        (assign, "$g_ally_party", "$current_town"),
+
+        (call_script, "script_coop_copy_parties_to_file_sp"),#clears registers
+        (try_begin),
+          (eq, "$coop_skip_menu", 1),
+          (change_screen_quit), 
+        (try_end),
+       ]),	
+	  
+      ("quit",[
+        (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+        (eq, "$coop_battle_state", coop_battle_state_setup_sp),
+      ],"Quit game (will not save).", 
+      [
+        (change_screen_quit), 
+      ]),		
+
+      ("coop_use_result",[
+         (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+         (eq, "$coop_battle_state", coop_battle_state_end_mp),
+      ],"Use multiplayer battle results.", 
+      [
+
+        (call_script, "script_coop_copy_file_to_parties_sp"),	     #remove troops from parties
+        (assign, "$g_next_menu", "mnu_train_peasants_against_bandits_attack_result"),
+        (jump_to_menu, "mnu_battle_debrief"),
+
+      ]),		  
+#COOP END#################################################      
     ],
   ),
 
@@ -21936,7 +22440,131 @@ game_menus = [
         (change_screen_mission),
       ]
       ),
+#COOP BEGIN Bandit lair#############################
 
+##############################################################################
+#### POP ADAPTATION BEGIN. The code comes from the module_game_menus.py file
+##############################################################################
+
+      ("coop_setup",
+       [
+        (call_script, "script_coop_get_battle_state", 1), #sets coop_battle_state
+        (this_or_next|ge, "$cheat_mode", 1),
+        (eq, "$coop_battle_state", coop_battle_state_none),
+        (party_slot_eq, "$g_encountered_party", slot_party_ai_substate, 0), #used in place of global variable
+        (party_get_template_id, ":encountered_party_template", "$g_encountered_party"),
+        #dont include looter lair
+        (this_or_next|eq, ":encountered_party_template", "pt_sea_raider_lair"),
+        (this_or_next|eq, ":encountered_party_template", "pt_forest_bandit_lair"),
+        (this_or_next|eq, ":encountered_party_template", "pt_mountain_bandit_lair"),
+        (this_or_next|eq, ":encountered_party_template", "pt_snake_bandit_lair"),
+        (eq, ":encountered_party_template", "pt_steppe_bandit_lair"),   
+       ],
+#      ("coop_setup",
+#       [
+#        (call_script, "script_coop_get_battle_state", 1), #sets coop_battle_state
+#        (this_or_next|ge, "$cheat_mode", 1),
+#        (eq, "$coop_battle_state", coop_battle_state_none),
+#        (party_slot_eq, "$g_encountered_party", slot_party_ai_substate, 0), #used in place of global variable
+#        (party_stack_get_troop_id, ":bandit_type", "$g_encountered_party", 0),
+#		    (is_between, ":bandit_type", bandits_begin, bandits_end),     #dont include looter lair
+#       ],
+##############################################################################
+#### POP ADAPTATION END.
+##############################################################################
+
+       "Setup multiplayer battle.", 
+       [
+        (assign, "$coop_battle_type", coop_battle_type_bandit_lair),
+        (assign, "$coop_encountered_party", "$g_encountered_party"),
+
+        (store_character_level, ":player_level", "trp_player"),        
+        (store_add, ":number_of_bandits_will_be_spawned", 5, ":player_level"),
+
+        (party_stack_get_troop_id, ":bandit_type", "$g_encountered_party", 0),
+        (party_stack_get_size, ":stack_size", "$g_encountered_party", 0),
+        (val_sub, ":number_of_bandits_will_be_spawned", ":stack_size"),
+        (party_add_members, "$g_encountered_party", ":bandit_type", ":number_of_bandits_will_be_spawned"),
+
+        (call_script, "script_coop_copy_parties_to_file_sp"),#clears registers
+        (try_begin),
+          (eq, "$coop_skip_menu", 1),
+          (change_screen_quit), 
+        (try_end),
+       ]),	
+	  
+
+      ("quit",[
+        (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+        (eq, "$coop_battle_state", coop_battle_state_setup_sp),
+      ],"Quit game (will not save).", 
+      [
+        (change_screen_quit), 
+      ]),		
+
+      ("coop_use_result",[
+         (this_or_next|ge, "$cheat_mode", 1),#always allow in cheat mode
+         (eq, "$coop_battle_state", coop_battle_state_end_mp),
+
+##############################################################################
+#### POP ADAPTATION BEGIN. The code comes from the module_game_menus.py file
+##############################################################################
+
+        #dont include looter lair
+        (this_or_next|eq, ":encountered_party_template", "pt_sea_raider_lair"),
+        (this_or_next|eq, ":encountered_party_template", "pt_forest_bandit_lair"),
+        (this_or_next|eq, ":encountered_party_template", "pt_mountain_bandit_lair"),
+        (this_or_next|eq, ":encountered_party_template", "pt_snake_bandit_lair"),
+        (eq, ":encountered_party_template", "pt_steppe_bandit_lair"),
+
+#        (party_stack_get_troop_id, ":bandit_type", "$g_encountered_party", 0),
+#        (is_between, ":bandit_type", bandits_begin, bandits_end),     #dont include looter lair
+##############################################################################
+#### POP ADAPTATION END.
+##############################################################################
+      ],"Use multiplayer battle results.", 
+      [
+      (party_stack_get_troop_id, ":bandit_type", "$g_encountered_party", 0),
+	    (assign, "$g_enemy_party", "$g_encountered_party"),
+
+      (call_script, "script_coop_copy_file_to_parties_sp"),	     #remove troops from parties
+      (party_add_members, "$g_encountered_party", ":bandit_type", 1), #add one to remember what type
+
+      (try_begin),
+        (eq, "$g_battle_result", 1), #player won
+        (party_set_slot, "$g_encountered_party", slot_party_ai_substate, 2),
+      (else_try),
+        (eq, "$g_battle_result", -1), #enemy won
+        (party_set_slot, "$g_encountered_party", slot_party_ai_substate, 1),
+	    (try_end),
+      ]),
+
+      ("encounter_save",[
+        (party_slot_eq, "$g_encountered_party", slot_party_ai_substate, 0), 
+##############################################################################
+#### POP ADAPTATION BEGIN. The code comes from the module_game_menus.py file
+##############################################################################
+
+        #dont include looter lair
+        (this_or_next|eq, ":encountered_party_template", "pt_sea_raider_lair"),
+        (this_or_next|eq, ":encountered_party_template", "pt_forest_bandit_lair"),
+        (this_or_next|eq, ":encountered_party_template", "pt_mountain_bandit_lair"),
+        (this_or_next|eq, ":encountered_party_template", "pt_snake_bandit_lair"),
+        (eq, ":encountered_party_template", "pt_steppe_bandit_lair"),
+
+#        (party_stack_get_troop_id, ":bandit_type", "$g_encountered_party", 0),
+#        (is_between, ":bandit_type", bandits_begin, bandits_end),     #dont include looter lair
+##############################################################################
+#### POP ADAPTATION END.
+##############################################################################
+        ],"Give me time to save.",
+      [
+        (call_script, "script_coop_get_battle_state", 2),
+        (leave_encounter),
+        (change_screen_return),
+       # (rest_for_hours, 1, 1, 0),#rest while not attackable
+      ]),		  	  
+#COOP END#################################################
       ("leave_no_attack",
       [
         (party_slot_eq, "$g_encountered_party", 8, 0),

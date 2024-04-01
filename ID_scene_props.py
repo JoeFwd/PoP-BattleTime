@@ -1268,3 +1268,4 @@ spr_apple_basket_new = 1266
 spr_bath_metal = 1267
 spr_candle_stick = 1268
 spr_chandelier_classy = 1269
+spr_coop_inventory = 1270

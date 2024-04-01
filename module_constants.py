@@ -28,3 +28,202 @@ from header_items import *
 from header_troops import *
 
 from module_parties import pf_village
+
+#### POP REVERSE ENGINEER BEGIN
+towns_begin = "p_town_1" # confirmed
+castles_begin = "p_castle_1" # confirmed
+villages_begin = "p_village_1" #confirmed
+
+towns_end = castles_begin
+castles_end = villages_begin #confirmed
+villages_end   = "p_salt_mine"
+
+walled_centers_begin = towns_begin
+walled_centers_end   = castles_end
+
+centers_begin = towns_begin #confirmed
+centers_end   = villages_end #confirmed
+
+kings_begin = "trp_kingdom_1_lord"
+kings_end = "trp_knight_1_1"
+
+pretenders_begin = "trp_kingdom_1_pretender"
+pretenders_end = "trp_knight_1_1_wife"
+
+slot_player_spawned_this_round = 0
+slot_player_last_rounds_used_item_earnings = 1
+slot_player_poll_disabled_until_time = 26
+slot_player_death_pos_x = 29
+slot_player_death_pos_y = 30
+slot_player_death_pos_z = 31
+slot_player_bot_type_1_wanted = 35
+slot_player_bot_type_2_wanted = 36
+slot_player_bot_type_3_wanted = 37
+slot_player_bot_type_4_wanted = 38
+
+slot_agent_target_x_pos = 1
+slot_agent_target_y_pos = 2
+
+slot_troop_occupation = 2
+slot_troop_leaded_party = 10
+slot_troop_banner_scene_prop = 13
+slot_troop_current_rumor = 45
+slot_troop_temp_slot = 46
+
+slot_party_type = 0
+slot_party_ai_substate = 8
+
+spt_castle = 2
+spt_town = 3
+spt_village = 4
+spt_bandit_lair = 18
+
+slot_village_infested_by_bandits = 39
+
+slot_castle_exterior = 10
+
+slot_town_lord = 7
+slot_town_center = 10
+slot_town_castle = 11
+slot_town_prison = 12
+slot_town_walls = 18
+
+slot_faction_marshall = 8
+
+slot_quest_target_center = 1
+
+slto_kingdom_hero = 2
+slto_kingdom_lady = 6
+
+banner_scene_props_begin = "spr_banner_a"
+banner_scene_props_end_minus_one = "spr_banner_f21"
+
+arms_meshes_begin = "mesh_arms_a01"
+
+trade_goods_begin = "itm_spice"
+trade_goods_end = "itm_baggage_train"
+
+scene_prop_number_of_agents_pushing = 3
+scene_prop_next_entry_point_id = 4
+scene_prop_belfry_platform_moved = 5
+
+enctype_fighting_against_village_raid = 1
+enctype_catched_during_village_raid = 2
+
+tmt_humanitarian = 3
+
+multiplayer_scenes_begin = "scn_multi_scene_1"
+multiplayer_scenes_end = "scn_multiplayer_maps_end"
+multiplayer_scene_names_begin = "str_multi_scene_1"
+multiplayer_game_type_names_begin = "str_multi_game_type_1"
+
+#COOP BEGIN MAKE SURE THESE DONT OVERLAP WITH YOUR MOD (only used in MP)#########################################################
+slot_agent_coop_spawn_party       = 26
+slot_agent_coop_banner            = 27
+#COOP END##################################################################
+
+#COOP BEGIN MAKE SURE THESE DONT OVERLAP WITH YOUR MOD ############################################################
+slot_player_coop_class_0_wanted                     = 40
+slot_player_coop_class_1_wanted                     = 41
+slot_player_coop_class_2_wanted                     = 42
+slot_player_coop_class_3_wanted                     = 43
+slot_player_coop_class_4_wanted                     = 44
+slot_player_coop_class_5_wanted                     = 45
+slot_player_coop_class_6_wanted                     = 46
+slot_player_coop_class_7_wanted                     = 47
+slot_player_coop_class_8_wanted                     = 48
+slot_player_coop_selected_troop                     = 49
+#COOP END##################################################################
+
+#COOP BEGIN CONSTANTS ########################################################################
+coop_temp_party_enemy_heroes       = "p_temp_casualties_2"
+coop_temp_party_ally_heroes        = "p_temp_casualties_3"
+
+coop_temp_party_enemy_begin        = 20 # = zendar
+coop_temp_casualties_enemy_begin   = coop_temp_party_enemy_begin + 40 # 4x this number = 160 total temp parties reserved in MP
+coop_temp_party_ally_begin         = coop_temp_casualties_enemy_begin + 40
+coop_temp_casualties_ally_begin    = coop_temp_party_ally_begin + 40
+
+#battle size
+coop_min_battle_size               = 30
+coop_def_battle_size               = 100
+coop_max_battle_size               = 1000
+coop_reserves_hall                 = 20
+coop_reserves_street               = 80
+
+
+#round for siege battles
+coop_round_battle                   = 1
+coop_round_stop_reinforcing_wall    = 2
+coop_round_town_street              = 3
+coop_round_stop_reinforcing_street  = 4
+coop_round_castle_hall              = 5
+
+#type of mission
+coop_battle_type_field_battle          = 1
+coop_battle_type_siege_player_attack   = 2
+coop_battle_type_siege_player_defend   = 3
+coop_battle_type_village_player_attack = 4
+coop_battle_type_village_player_defend = 5
+coop_battle_type_bandit_lair           = 6
+
+coop_battle_state_none                 = 0
+coop_battle_state_setup_sp             = 1
+coop_battle_state_setup_mp             = 2
+coop_battle_state_started              = 3
+coop_battle_state_end_mp               = 4
+coop_battle_state_end_sp               = 5
+
+#multiplayer message subtypes
+#multiplayer_event_coop_send_to_server
+coop_event_start_map                              = 1
+coop_event_battle_size                            = 2
+coop_event_spawn_formation                        = 3
+coop_event_skip_admin_panel                       = 4
+coop_event_player_open_inventory_before_spawn     = 5
+coop_event_player_get_selected_item_types         = 6
+coop_event_player_ask_for_selected_item           = 7
+coop_event_player_remove_selected_item            = 8
+coop_event_setup_battle                           = 9
+coop_event_start_battle                           = 10
+coop_event_open_admin_panel                       = 11
+coop_event_open_game_rules                        = 12
+coop_event_end_battle                             = 13
+coop_event_disable_inventory                      = 14
+coop_event_reduce_damage                          = 15
+coop_event_no_capture_heroes                      = 16
+
+#multiplayer_event_coop_send_to_player
+coop_event_store_hero_troops                      = 20
+coop_event_round                                  = 21
+coop_event_troop_banner                           = 22
+coop_event_troop_raise_attribute                  = 23
+coop_event_troop_raise_skill                      = 24
+coop_event_troop_raise_proficiency_linear         = 25
+coop_event_troop_set_slot                         = 26
+coop_event_player_set_slot                        = 27
+coop_event_send_inventory                         = 28 
+coop_event_prsnt_coop_item_select                 = 29
+coop_event_inv_troop_set_slot                     = 30
+coop_event_set_scene_1                            = 31
+coop_event_set_scene_2                            = 32
+coop_event_set_scene_3                            = 33
+coop_event_set_scene_4                            = 34
+coop_event_set_scene_5                            = 35
+coop_event_return_team_faction                    = 36
+coop_event_return_spawn_formation                 = 37
+coop_event_return_battle_size                     = 38
+coop_event_return_game_type                       = 39
+coop_event_return_castle_party                    = 40
+coop_event_return_battle_scene                    = 41
+coop_event_return_skip_menu                       = 42
+coop_event_return_open_game_rules                 = 43
+coop_event_receive_next_string                    = 44
+coop_event_return_num_reserves                    = 45
+coop_event_return_battle_state                    = 46
+coop_event_result_saved                           = 47
+coop_event_return_disable_inventory               = 48
+coop_event_return_reduce_damage                   = 49
+coop_event_return_no_capture_heroes               = 50
+coop_event_return_team_troop_num                  = 51
+#COOP END##################################################################

@@ -12,6 +12,9 @@ from header_operations import *
 from header_triggers import *
 from module_constants import *
 import string
+#COOP BEGIN#######################################
+from module_coop_presentations import *
+#COOP END###############################################
 
 ####################################################################################################################
 #  Each presentation record contains the following fields:
@@ -2404,6 +2407,20 @@ presentations = [
       (position_set_x, pos1, 1500),
       (position_set_y, pos1, 1500),
       (overlay_set_size, "$g_presentation_obj_admin_panel_2", pos1),
+      
+#COOP BEGIN############################################################
+      (try_begin),
+        (eq, "$coop_battle_state", coop_battle_state_setup_sp),
+        (create_button_overlay, "$g_presentation_obj_admin_panel_43", "@Co-op Admin Panel", tf_center_justify),
+        (position_set_x, pos1, 825),
+        (position_set_y, pos1, 130),
+        (overlay_set_position, "$g_presentation_obj_admin_panel_43", pos1),
+        (position_set_x, pos1, 1500),
+        (position_set_y, pos1, 1500),
+        (overlay_set_size, "$g_presentation_obj_admin_panel_43", pos1),
+      (try_end),
+#COOP END#############################################################      
+      
       (presentation_set_duration, 999999),
       (try_begin),
         (eq, ":var9", 0),
@@ -2561,10 +2578,25 @@ presentations = [
       (else_try),
         (eq, ":var0", "$g_presentation_obj_admin_panel_42"),
         (multiplayer_send_int_to_server, 47, ":var1"),
-      (end_try),
+#COOP BEGIN############################################################
+      (else_try),
+        (eq, ":var0", "$g_presentation_obj_admin_panel_43"),
+        (presentation_set_duration, 0),
+        (multiplayer_send_int_to_server, multiplayer_event_coop_send_to_server, coop_event_setup_battle),
+#COOP END##########################################################        
+      (try_end),
     ]),
     (ti_on_presentation_run,
     [
+#COOP BEGIN############################################################
+      (try_begin), 
+        (multiplayer_is_server),
+        (call_script, "script_coop_on_admin_panel_load"),
+        (eq, "$coop_battle_state", coop_battle_state_setup_mp),#only if coop battle is setup
+        (presentation_set_duration, 0),
+        (start_presentation, "prsnt_coop_admin_panel"),
+      (try_end),
+#COOP END###############################################################    
       (try_begin),
         (key_clicked, key_escape),
         (presentation_set_duration, 0),
@@ -14208,4 +14240,6 @@ presentations = [
     ]),
   ]),
 
-]
+#COOP BEGIN #########################################
+] + coop_presentations 
+#COOP END############################################

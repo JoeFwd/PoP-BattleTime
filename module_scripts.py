@@ -17,7 +17,9 @@ from header_terrain_types import *
 from header_music import *
 from header_map_icons import *
 from ID_animations import *
-
+#COOP BEGIN#################################
+from module_coop_scripts import *
+#COOP END######################################
 
 ####################################################################################################################
 # scripts is a list of script records.
@@ -29,6 +31,9 @@ from ID_animations import *
 scripts = [
   ("game_start",
   [
+#COOP BEGIN#########################################################################################################
+      (call_script, "script_coop_set_default_admin_settings"), #set default settings for admin panel at game start
+#COOP END##########################################################################################################  
     (faction_set_slot, "fac_player_supporters_faction", 21, 2),
     (assign, "$g_player_luck", 300),
     (troop_set_slot, "trp_player", 2, 2),
@@ -1411,8 +1416,14 @@ scripts = [
         (str_store_string, s0, "str_raise_ladder"),
       (else_try),
         (str_store_string, s0, "str_drop_ladder"),
-      (end_try),
-    (end_try),
+      (try_end),
+    (try_end),
+#COOP BEGIN####################################    
+     (try_begin),
+       (eq, ":var1", "spr_coop_inventory"),
+       (str_store_string, s0, "@Access Inventory"),
+     (try_end),
+#COOP END#################################################    
   ]),
 
   ("game_quick_start",
@@ -4405,7 +4416,15 @@ scripts = [
       (store_sub, ":var1", ":var0", "scn_multi_scene_1"),
       (val_add, ":var1", "str_multi_scene_1"),
       (str_store_string, s0, ":var1"),
-    (end_try),
+#COOP BEGIN########################################################
+      (else_try),
+        (try_begin),
+          (neg|multiplayer_is_server),
+          (assign, "$coop_map_party", 0),#only clear this for clients when joining server
+        (try_end),
+        (call_script, "script_coop_get_scene_name", ":var0"),
+#COOP END##########################################################################      
+    (try_end),
   ]),
 
   ("game_get_mission_template_name",
@@ -7559,6 +7578,15 @@ scripts = [
   [
     (store_script_param, ":var0", 1),
     (store_script_param, ":var1", 2),
+#COOP BEGIN########################################
+      (try_begin),
+        (store_script_param, ":value_1", 3),
+        (store_script_param, ":value_2", 4),
+        (store_script_param, ":value_3", 5),
+        (store_script_param, ":value_4", 6),
+        (call_script, "script_coop_receive_network_message", ":var0", ":var1", ":value_1", ":value_2", ":value_3", ":value_4"),
+      (try_end),
+#COOP END##############################################    
     (try_begin),
       (eq, ":var1", 0),
       (store_script_param, ":var2", 3),
@@ -8854,6 +8882,12 @@ scripts = [
     (store_script_param, ":var0", 1),
     (store_script_param, ":var1", 2),
     (try_begin),
+#COOP BEGIN server send data #############################
+       (this_or_next|eq, ":var0", "mt_coop_battle"),
+       (eq, ":var0", "mt_coop_siege"),
+       (call_script, "script_coop_server_send_data_before_join", ":var1"),
+     (else_try),
+#COOP END#############################################    
       (eq, ":var1", 0),
       (assign, reg0, "$g_multiplayer_team_1_faction"),
       (set_trigger_result, 1),
@@ -8984,6 +9018,12 @@ scripts = [
     (store_script_param, ":var2", 3),
     (str_clear, s0),
     (try_begin),
+#COOP BEGIN client recieve data #############################
+       (this_or_next|eq, ":var0", "mt_coop_battle"),
+       (eq, ":var0", "mt_coop_siege"),
+       (call_script, "script_coop_client_receive_data_before_join", ":var1", ":var2"),
+     (else_try),
+#COOP END#############################################    
       (eq, ":var1", 0),
       (assign, reg1, 1),
       (str_store_string, s0, "str_team_reg1_faction"),
@@ -9328,7 +9368,15 @@ scripts = [
     (else_try),
       (eq, ":var1", 7),
       (assign, ":var0", "mt_multiplayer_duel"),
-    (end_try),
+#COOP BEGIN########################################################
+     (else_try),
+       (eq, ":var1", multiplayer_game_type_coop_battle),
+       (assign, ":var0", "mt_coop_battle"),
+     (else_try),
+       (eq, ":var1", multiplayer_game_type_coop_siege),
+       (assign, ":var0", "mt_coop_siege"),
+#COOP END################################################################
+    (try_end),
     (assign, reg0, ":var0"),
   ]),
 
@@ -9360,7 +9408,15 @@ scripts = [
     (else_try),
       (eq, ":var0", "mt_multiplayer_duel"),
       (assign, ":var1", 7),
-    (end_try),
+#COOP BEGIN#################################################################
+     (else_try),
+       (eq, ":var0", "mt_coop_battle"),
+       (assign, ":var1", multiplayer_game_type_coop_battle),
+     (else_try),
+       (eq, ":var0", "mt_coop_siege"),
+       (assign, ":var1", multiplayer_game_type_coop_siege),
+#COOP END########################################################################
+    (try_end),
     (assign, reg0, ":var1"),
   ]),
 
@@ -26993,9 +27049,23 @@ scripts = [
             (faction_get_slot, ":var3", ":var12", 15),
           (else_try),
             (assign, ":var3", "mesh_banners_default_c"),
-          (end_try),
-        (end_try),
-      (end_try),
+          (try_end),
+        (try_end),
+      (try_end),
+#COOP BEGIN use banner from server ############################################################	
+         (try_begin),
+           (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_coop_battle),
+           (eq, "$g_multiplayer_game_type", multiplayer_game_type_coop_siege),
+           (agent_get_slot, ":agent_banner",":var0", slot_agent_coop_banner), 
+           (try_begin),
+              (gt, ":agent_banner", 0),
+              (assign, ":var3", ":agent_banner"),	
+           (else_try),
+              (gt, "$coop_agent_banner", 0),
+              (assign, ":var3", "$coop_agent_banner"),	
+           (try_end),  
+         (try_end),
+#COOP END##########################################################################################
     (else_try),
       (agent_get_troop_id, ":var13", ":var0"),
       (this_or_next|troop_slot_ge, ":var13", 13, 1),
@@ -71891,4 +71961,6 @@ scripts = [
     (end_try),
   ]),
 
-]
+#COOP BEGIN ###################
+] + coop_scripts 
+#COOP END####################

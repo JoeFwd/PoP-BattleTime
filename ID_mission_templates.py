@@ -54,3 +54,5 @@ mst_meeting_merchant = 52
 mst_town_fight = 53
 mst_multiplayer_duel = 54
 mst_visit_old_ruins_1 = 55
+mst_coop_battle = 56
+mst_coop_siege = 57
