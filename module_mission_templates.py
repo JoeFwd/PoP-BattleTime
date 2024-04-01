@@ -16044,7 +16044,7 @@ mission_templates = [
         (position_rotate_z, pos1, -8),
         (position_set_z, pos1, 350),
         (position_rotate_x, pos1, 35),
-        (mission_cam_animate_to_position_and_aparture, pos1, 10, 9000, 1),
+        (mission_cam_animate_to_position_and_aperture, pos1, 10, 9000, 1),
         (val_add, "$g_wedding_state", 1),
       (else_try),
         (eq, "$g_wedding_state", 10),

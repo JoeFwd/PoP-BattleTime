@@ -11,6 +11,7 @@ from ID_meshes import *
 from header_operations import *
 from header_triggers import *
 from module_constants import *
+from header_items import *
 import string
 
 ####################################################################################################################

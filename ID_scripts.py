@@ -752,3 +752,5 @@ script_select_lair_warrior = 750
 script_purge_the_world_execute = 751
 script_remove_stacks_under_given_level_to_reach_desired_party_size = 752
 script_initialize_exchange_screen_extensions = 753
+
+

@@ -10,9 +10,11 @@ from header_operations import *
 from header_parties import *
 from header_item_modifiers import *
 from header_skills import *
+from header_items import *
 from header_triggers import *
 from ID_troops import *
 from ID_party_templates import *
+from header_troops import *
 
 from module_constants import *
 
@@ -34838,7 +34840,7 @@ dialogs = [
 
   [anyone, "traveler_snakes_quest",
     [],
-    "Now, listen closely for it's quite an extraordinary tale.^A week ago my cousin happened to travel near {s8}. The roads there should be safe, or so he thought. He was having a lunch in the small woods by the roadside, when suddenly a small party of Snakes rode down the road, screeching and hissing as is their wont.^He quickly hid from view, but was able to discern a few utterings as they rode by - something about "Grandmaster sacrifice" and "hidden stronghold" - I can't make the heads or tails of it, but someone learned may be able to help. Perhaps Order scribes?^Anyway, they are up to no good and I hope you can stop them.",
+    "Now, listen closely for it's quite an extraordinary tale.^A week ago my cousin happened to travel near {s8}. The roads there should be safe, or so he thought. He was having a lunch in the small woods by the roadside, when suddenly a small party of Snakes rode down the road, screeching and hissing as is their wont.^He quickly hid from view, but was able to discern a few utterings as they rode by - something about \"Grandmaster sacrifice\" and \"hidden stronghold\" - I can't make the heads or tails of it, but someone learned may be able to help. Perhaps Order scribes?^Anyway, they are up to no good and I hope you can stop them.",
     "close_window",
     [
       (quest_get_slot, ":var0", "qst_order_grandmaster", 12),
@@ -46591,7 +46593,7 @@ dialogs = [
         (str_store_string, s4, "@Greetings, your Majesty. Allow me to introduce myself: I am Sir Timothy of the Order of the Unicorn, and I am here to answer your call for heroes! My knights and loyal followers are yours to command!"),
       (else_try),
         (eq, "$g_talk_troop", "trp_lothario"),
-        (str_store_string, s4, "@Hello, friend! I've heard you needed someone to "juice" you... er... reinforce your armies, all for the good of the common people of Pendor, I hope.^I field a fine party of brothers experienced both in combat and, some of them, imprisonment until they met me.^For a bit of cash and a fair portion of prisoners, captured or rescued, we shall exact revenge on your enemies... heh... for whatever misdeeds they inflicted upon your friends and allies. Or my friends and allies. We'll find a reason, I'm sure."),
+        (str_store_string, s4, "@Hello, friend! I've heard you needed someone to \"juice`\" you... er... reinforce your armies, all for the good of the common people of Pendor, I hope.^I field a fine party of brothers experienced both in combat and, some of them, imprisonment until they met me.^For a bit of cash and a fair portion of prisoners, captured or rescued, we shall exact revenge on your enemies... heh... for whatever misdeeds they inflicted upon your friends and allies. Or my friends and allies. We'll find a reason, I'm sure."),
       (else_try),
         (eq, "$g_talk_troop", "trp_morcas"),
         (str_store_string, s4, "@Hail, I am Sir Morcas Verral, the leader of the famous Snowlion Brigade. We will fight for anyone who strives to reunite the north with the heartlands. Besides, our treasury has been rather empty as of late, so if you pay us, we shall lend you our strength."),

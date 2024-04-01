@@ -74,3 +74,5 @@ fac_undeads = 72
 fac_slavers = 73
 fac_peasant_rebels = 74
 fac_noble_refugees = 75
+
+
