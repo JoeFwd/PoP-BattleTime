@@ -30,28 +30,17 @@ from header_troops import *
 from module_parties import pf_village
 
 #### POP REVERSE ENGINEER BEGIN
-towns_begin = "p_town_1" # confirmed
-castles_begin = "p_castle_1" # confirmed
-villages_begin = "p_village_1" #confirmed
+towns_begin = "p_town_1"
+castles_begin = "p_castle_1"
+villages_begin = "p_village_1"
 
 towns_end = castles_begin
-castles_end = villages_begin #confirmed
+castles_end = villages_begin
 villages_end   = "p_salt_mine"
 
-walled_centers_begin = towns_begin
-walled_centers_end   = castles_end
-
-centers_begin = towns_begin #confirmed
-centers_end   = villages_end #confirmed
-
 kings_begin = "trp_kingdom_1_lord"
-kings_end = "trp_knight_1_1"
-
-pretenders_begin = "trp_kingdom_1_pretender"
 pretenders_end = "trp_knight_1_1_wife"
 
-slot_player_spawned_this_round = 0
-slot_player_last_rounds_used_item_earnings = 1
 slot_player_poll_disabled_until_time = 26
 slot_player_death_pos_x = 29
 slot_player_death_pos_y = 30
@@ -85,7 +74,6 @@ slot_castle_exterior = 10
 slot_town_lord = 7
 slot_town_center = 10
 slot_town_castle = 11
-slot_town_prison = 12
 slot_town_walls = 18
 
 slot_faction_marshall = 8
@@ -93,7 +81,6 @@ slot_faction_marshall = 8
 slot_quest_target_center = 1
 
 slto_kingdom_hero = 2
-slto_kingdom_lady = 6
 
 banner_scene_props_begin = "spr_banner_a"
 banner_scene_props_end_minus_one = "spr_banner_f21"
