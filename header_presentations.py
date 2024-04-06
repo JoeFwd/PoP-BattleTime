@@ -18,3 +18,8 @@ tf_scrollable_style_2    = 0x00020000
 
 prsntf_read_only         = 0x00000001
 prsntf_manual_end_only   = 0x00000002
+
+###WSE2 BEGIN
+tf_scrollable_horizontal         = 0x00040000
+tf_scrollable_horizontal_style_2 = 0x00080000
+###WSE2 END

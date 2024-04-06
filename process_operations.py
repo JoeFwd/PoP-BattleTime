@@ -434,18 +434,17 @@ def save_statement_block(ofile,statement_name,can_fail_statement,statement_block
 #                   try_for_range_backwards,
 #                   try_for_parties,
 #                   try_for_agents]):
-#COOP BEGIN WSE#############
+### WSE2 BEGIN
     if (opcode in [try_begin,
                    try_for_range,
                    try_for_range_backwards,
                    try_for_parties,
                    try_for_agents,
-                   try_for_attached_parties,
-                   try_for_active_players,
                    try_for_prop_instances,
+                   try_for_players,
                    try_for_dict_keys,
                    ]):
-#COOP END WSE#################                   
+### WS2 END
       current_depth = current_depth + 1
     elif (opcode == try_end):
       current_depth = current_depth - 1

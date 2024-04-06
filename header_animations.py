@@ -119,6 +119,12 @@ acf_rot_vertical_sword       = 0x00200000
 acf_anim_length_mask         = 0xff000000
 
 acf_anim_length_bits         = 24
+
+#### WSE2 BEGIN
+acf_apply_slope_for_human      = 0x00000004 # apply slope for human agent same as horse (requires WSE2)
+acf_lock_rotation              = 0x00000800 # lock agent rotation
+#### WSE2 END
+
 def acf_anim_length(x):
   return (x << acf_anim_length_bits) & acf_anim_length_mask
 #------------------------------------------

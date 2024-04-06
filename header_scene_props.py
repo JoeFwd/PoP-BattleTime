@@ -38,6 +38,10 @@ spbf_hit_points_bits       = 20
 spbf_init_use_time_mask    = 0x00000000000000FF
 spbf_use_time_bits         = 28
 
+### WSE2 BEGIN
+sokf_weapon_knock_back_collision     = 0x0000000010000000 # weapon knock back by hit destructible prop
+### WSE2 END
+
 def spr_hit_points(x):
   return ((x & spbf_hit_points_mask) << spbf_hit_points_bits)
 
