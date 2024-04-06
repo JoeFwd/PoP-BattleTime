@@ -753,9 +753,10 @@ coop_scripts = [
           # (neg|is_between, ":hero_troop", kings_begin, pretenders_end),
           (str_store_troop_name, s0, ":hero_troop"),
           (multiplayer_send_string_to_player, ":player_no", multiplayer_event_coop_send_to_player_string, s0),
-
-          (troop_get_face_keys, reg1, ":hero_troop"),
-          (str_store_face_keys, s0, reg1),
+          (str_store_troop_face_keys, s0, ":hero_troop"),
+          #(display_message, "@face key for troop {:hero_troop} is {s0}"), # debug
+          #(troop_get_face_keys, reg1, ":hero_troop"),
+          #(str_store_face_keys, s0, reg1),
           (multiplayer_send_string_to_player, ":player_no", multiplayer_event_coop_send_to_player_string, s0),
         (try_end),
 
@@ -784,9 +785,10 @@ coop_scripts = [
           # (neg|is_between, ":hero_troop", kings_begin, pretenders_end),
           (str_store_troop_name, s0, ":hero_troop"),
           (multiplayer_send_string_to_player, ":player_no", multiplayer_event_coop_send_to_player_string, s0),
-
-          (troop_get_face_keys, reg1, ":hero_troop"),
-          (str_store_face_keys, s0, reg1),
+          (str_store_troop_face_keys, s0, ":hero_troop"),
+          #(display_message, "@face key for troop {:hero_troop} is {s0}"), #debug
+          #(troop_get_face_keys, reg1, ":hero_troop"),
+          #(str_store_face_keys, s0, reg1),
           (multiplayer_send_string_to_player, ":player_no", multiplayer_event_coop_send_to_player_string, s0),
         (try_end),
 
@@ -1230,8 +1232,9 @@ coop_scripts = [
         (eq, "$coop_string_received", 3), 
         (try_begin),
           (neg|is_vanilla_warband),
-          (face_keys_store_string, reg1, s0),
-          (troop_set_face_keys, "$coop_last_hero_received", reg1),
+          #(face_keys_store_string, reg1, s0),
+          # (display_message, "@Received face key {s0} for troop {$coop_last_hero_received}"), #debug
+          (troop_set_face_keys, "$coop_last_hero_received", s0),
         (try_end),
         (assign, "$coop_string_received", 2), 
 
@@ -3485,9 +3488,12 @@ coop_scripts = [
         (dict_set_int, "$coop_dict", "@hero_{reg21}_hp", ":health"),
 
 #NEW
-        (face_keys_init, reg1),
-        (troop_get_face_keys, reg1, ":cur_troop"),
-        (str_store_face_keys, s0, reg1),
+        
+        (str_store_troop_face_keys, s0, ":cur_troop"),
+        # (display_message, "@Saving face key for troop {:cur_troop} is {s0}"), #debug
+        #(face_keys_init, reg1),
+        #(troop_get_face_keys, reg1, ":cur_troop"),
+        #(str_store_face_keys, s0, reg1),
         (dict_set_str, "$coop_dict", "@hero_{reg21}_face", s0),
 
         (store_attribute_level, ":ca_strength", ":cur_troop", ca_strength),
@@ -3625,8 +3631,11 @@ coop_scripts = [
         (try_begin),#only set face in MP
           (game_in_multiplayer_mode),
           (dict_get_str, s0, "$coop_dict", "@hero_{reg21}_face"),
-          (face_keys_store_string, reg1, s0),
-          (troop_set_face_keys, ":cur_troop", reg1),
+          
+          #(display_message, "@Loading face key {s0} for troop {:cur_troop}"), # debug
+          #(face_keys_store_string, reg1, s0),
+          #(troop_set_face_keys, ":cur_troop", reg1),
+          (troop_set_face_keys, ":cur_troop", s0),
         (try_end),
 
         (dict_get_int, ":xp", "$coop_dict", "@hero_{reg21}_xp"),

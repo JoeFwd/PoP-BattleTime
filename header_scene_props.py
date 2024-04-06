@@ -54,3 +54,6 @@ def get_spr_use_time(y):
 
 spanim_linear              = 0
 spanim_loop_linear         = 4
+### WSE 3.1.4 BEGIN
+sokf_weapon_knock_back_collision     = 0x0000000010000000 # weapon knock back by hit destructible prop
+### WSE 3.1.4 END
